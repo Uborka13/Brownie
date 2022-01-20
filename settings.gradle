@@ -1,0 +1,6 @@
+rootProject.name = "BrownieArch"
+include ':app'
+include ':brownie'
+include ':brownie-nav'
+include ':brownie-auth'
+include ':brownie-dialog'
