@@ -1,0 +1,3 @@
+install:
+  - ./gradlew :brownie:build :brownie:publishToMavenLocal -x :brownie:test
+  - find . -name "*.aar"
