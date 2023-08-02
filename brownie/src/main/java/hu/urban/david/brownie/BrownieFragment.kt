@@ -26,24 +26,30 @@ abstract class BrownieFragment<UM : UIModel, UA : UIActions> : Fragment(), ViewB
     @Suppress("UNCHECKED_CAST")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel.states.observe(this) {
-            when (it) {
-                is UIStates.Init -> {
-                    onInit()
-                }
-                is UIStates.Loading -> {
-                    onLoading(it.action as UA)
-                }
-                is UIStates.Success -> {
-                    onSuccess(it.action as UA)
-                    stateDone()
-                }
-                is UIStates.Error -> {
-                    onError(it.error, it.action as UA)
-                    stateDone()
-                }
-                UIStates.StateDone -> {
-                    /* no - op */
+        lifecycleScope.launchWhenCreated {
+            viewModel.states.collect {
+                when (it) {
+                    is UIStates.Init -> {
+                        onInit()
+                    }
+
+                    is UIStates.Loading -> {
+                        onLoading(it.action as UA)
+                    }
+
+                    is UIStates.Success -> {
+                        onSuccess(it.action as UA)
+                        stateDone()
+                    }
+
+                    is UIStates.Error -> {
+                        onError(it.error, it.action as UA)
+                        stateDone()
+                    }
+
+                    UIStates.StateDone -> {
+                        /* no - op */
+                    }
                 }
             }
         }
@@ -59,7 +65,7 @@ abstract class BrownieFragment<UM : UIModel, UA : UIActions> : Fragment(), ViewB
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         return binding.root
     }
