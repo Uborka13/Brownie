@@ -1,17 +1,18 @@
 package hu.urban.david.brownie
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 abstract class BrownieViewModel<UM : UIModel, UA : UIActions>(
     uiModelFactory: () -> UM,
-    channelCapacity: Int = Channel.RENDEZVOUS
+    channelCapacity: Int = Channel.RENDEZVOUS,
 ) : ViewModel() {
 
     var uiModel: UM = uiModelFactory()
@@ -32,11 +33,11 @@ abstract class BrownieViewModel<UM : UIModel, UA : UIActions>(
         }
     }
 
-    private var _uiStates = MutableLiveData<UIStates>(UIStates.Init)
-    val states: LiveData<UIStates> get() = _uiStates
+    private var _uiStates = MutableStateFlow<UIStates>(UIStates.Init)
+    val states: StateFlow<UIStates> get() = _uiStates.asStateFlow()
 
-    private var _event = MutableStateFlow<UIEvent>(InitEvent)
-    val event: StateFlow<UIEvent> = _event
+    private var _event = MutableSharedFlow<UIEvent>()
+    val event: SharedFlow<UIEvent> = _event
 
     protected fun setLoadingState(action: UA) {
         _uiStates.value = UIStates.Loading(action)
@@ -55,6 +56,6 @@ abstract class BrownieViewModel<UM : UIModel, UA : UIActions>(
     }
 
     protected fun postEvent(event: UIEvent) {
-        _event.value = event
+        _event.tryEmit(event)
     }
 }
